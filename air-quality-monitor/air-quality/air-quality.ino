@@ -21,9 +21,9 @@ int pinSDSTx = 12;
 SDS011 sds;
 
 //LED module pins
-int pinLEDR = 4;
-int pinLEDG = 3;
-int pinLEDB = 2;
+int pinLEDR = 6;
+int pinLEDG = 5;
+int pinLEDB = 3;
 
 
 //R, G, B
