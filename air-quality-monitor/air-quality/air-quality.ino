@@ -3,9 +3,10 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Fonts/FreeMono9pt7b.h>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -64,17 +65,18 @@ void showResults(int* status, PmResult pm) {
   Serial.println(displayConnected);
   if(displayConnected) {
     display.clearDisplay();
-    display.setCursor(2,10); 
-    display.print(F("  PM 2.5: "));
-    display.println(pm.pm25);
-    display.print(F("  PM 10 : "));
-    display.println(pm.pm10);
+    display.setCursor(0, 13); 
+    display.print(F("PM2.5: "));
+    display.print(pm.pm25);
+    display.setCursor(0, 50); 
+    display.print(F("PM10: "));
+    display.print(pm.pm10);
     display.display();
   }
 }
 
 bool checkDisplay() {
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
       Serial.println(F("SSD1306 allocation failed"));
       return false;
     }
@@ -93,6 +95,7 @@ void initDisplay() {
   //display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
+  display.setFont(&FreeMono9pt7b);
   display.println(F("Hello, welcome to PM monitor"));
   display.display();      // Show initial text
   delay(1000);
