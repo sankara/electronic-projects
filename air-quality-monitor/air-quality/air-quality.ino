@@ -1,49 +1,23 @@
 //Requires GFX, SSD1306 libs
-#include <SPI.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <Fonts/FreeMono9pt7b.h>
-
-#define SCREEN_WIDTH 128 // OLED display width, in pixels
-#define SCREEN_HEIGHT 64 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-bool displayConnected = false;
-
-//Nova sensor pins
-int pinSDSRx = 11;
-int pinSDSTx = 12;
-
-#include <SDS011.h>
-SDS011 sds;
-
-//LED module pins
-int pinLEDR = 6;
-int pinLEDG = 5;
-int pinLEDB = 3;
-
+#include <SSD1306Ascii.h>
+#include <SSD1306AsciiAvrI2c.h>
+#include <SdsDustSensor.h>
 
 //R, G, B
 int GREEN[] = {0x00, 0xff, 0x00};
 int YELLOW[] = {0x00, 0x00, 0xff};//Yellow isn't very visible hence the choice of blue
 int RED[] = {0xff, 0x00, 0x00};
 
-struct PmResult {
-  float pm25 = -1.0;
-  float pm10 = -1.0;
+//Nova sensor pins
+int pinSDSRx = 11;
+int pinSDSTx = 12;
+//LED module pins
+int pinLEDR = 6;
+int pinLEDG = 5;
+int pinLEDB = 3;
 
-  PmResult(const float _pm25, const float _pm10) {
-    pm25 = _pm25;
-    pm10 = _pm10;
-  }
-
-  String toString() {
-    return "pm25: " + String(pm25) + ", pm10: " + String(pm10);
-  }
-};
+SdsDustSensor sds(pinSDSRx, pinSDSTx);
+SSD1306AsciiAvrI2c screen;
 
 int* getPmAcceptability(PmResult pm) {
   if(pm.pm25 > 0 && pm.pm25 < 12) {
@@ -56,69 +30,48 @@ int* getPmAcceptability(PmResult pm) {
 }
 
 void showResults(int* status, PmResult pm) {
+  char pm25_s[12];
+  dtostrf(pm.pm25, 7, 2, pm25_s);
+  char pm10_s[12];
+  dtostrf(pm.pm10, 7, 2, pm10_s);
+
   //LED Output
   analogWrite(pinLEDR, status[0]);
   analogWrite(pinLEDG, status[1]);
   analogWrite(pinLEDB, status[2]);
 
   //OLED Output
-  Serial.println(displayConnected);
-  if(displayConnected) {
-    display.clearDisplay();
-    display.setCursor(0, 13); 
-    display.print(F("PM2.5: "));
-    display.print(pm.pm25);
-    display.setCursor(0, 50); 
-    display.print(F("PM10: "));
-    display.print(pm.pm10);
-    display.display();
-  }
-}
-
-bool checkDisplay() {
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-      Serial.println(F("SSD1306 allocation failed"));
-      return false;
-    }
-  return true;
+  screen.setCursor(0,0);
+  screen.print(F("PM 2.5 : "));
+  screen.println(pm25_s);
+  screen.println();
+  screen.println();
+  screen.print(F("PM 10  : "));
+  screen.println(pm10_s);
 }
 
 void initDisplay() {
-  // Show initial display buffer contents on the screen --
-  // the library initializes this with an Adafruit splash screen.
-  display.display();
-  delay(1000); // Pause for 2 seconds
+  screen.begin(&Adafruit128x64, 0x3C);
 
-  // Clear the buffer
-  display.clearDisplay();
+  screen.setFont(Callibri15);
+  screen.clear();
 
-  //display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.setFont(&FreeMono9pt7b);
-  display.println(F("Hello, welcome to PM monitor"));
-  display.display();      // Show initial text
-  delay(1000);
-  display.clearDisplay();
-  display.display();
+  screen.println(F("Starting"));
+  delay(3000);
+  screen.clear();
 }
 
 void setup() {
   Serial.begin(9600);  
 
-  if(displayConnected = checkDisplay()) {
-    initDisplay();
-  }
-
-  sds.begin(pinSDSRx, pinSDSTx);
+  initDisplay();
+  sds.begin();
 }
 
 void loop() {
   delay(2000);
 
-  float p25, p10;
-  sds.read(&p25, &p10);
-  PmResult pm(p25, p10);
+  PmResult pm = sds.readPm();
 
   Serial.print("PM2.5 = ");
   Serial.println(String(pm.pm25));
