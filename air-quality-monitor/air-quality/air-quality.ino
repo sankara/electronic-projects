@@ -2,6 +2,7 @@
 #include <SSD1306Ascii.h>
 #include <SSD1306AsciiWire.h>
 #include <SdsDustSensor.h>
+#include "properties.h"
 
 
 //R, G, B
@@ -68,15 +69,28 @@ void initDisplay() {
   delay(3000);
 }
 
-void setup() {
-  Serial.begin(9600);
-  Serial.println("initializing");
-
-  initDisplay();
+void initSDS() {
   sds.begin();
   Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
   Serial.println(sds.setActiveReportingMode().toString()); // ensures sensor is in 'active' reporting mode
   //Serial.println(sds.setContinuousWorkingPeriod().toString());
+}
+
+void initIOT() {
+  initProperties();
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  setDebugMessageLevel(2);
+  ArduinoCloud.printDebugInfo();  
+}
+
+void setup() {
+  Serial.begin(9600);
+  delay(1500);
+  Serial.println("initializing");
+
+  initDisplay();
+  initSDS();
+  initIOT();
 }
 
 void loop() {
@@ -90,6 +104,10 @@ void loop() {
     Serial.println(String(pm.pm10));
     int *statusLight = getPmAcceptability(pm);
     showResults(statusLight, pm);
+
+    pm10 = pm.pm10;
+    pm25 = pm.pm25;
+    ArduinoCloud.update();
   } else {
     Serial.print("Could not read values from sensor, reason: ");
     Serial.println(pm.statusToString());
