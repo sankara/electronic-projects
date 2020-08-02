@@ -1,26 +1,31 @@
-//Requires GFX, SSD1306 libs
+#include <Arduino.h>
 #include <SSD1306Ascii.h>
-#include <SSD1306AsciiAvrI2c.h>
+#include <SSD1306AsciiWire.h>
 #include <SdsDustSensor.h>
+
 
 //R, G, B
 int GREEN[] = {0x00, 0xff, 0x00};
 int YELLOW[] = {0x00, 0x00, 0xff};//Yellow isn't very visible hence the choice of blue
 int RED[] = {0xff, 0x00, 0x00};
 
-//Nova sensor pins
-int pinSDSRx = 11;
-int pinSDSTx = 12;
 //LED module pins
 int pinLEDR = 6;
 int pinLEDG = 5;
 int pinLEDB = 3;
 
-SdsDustSensor sds(pinSDSRx, pinSDSTx);
-SSD1306AsciiAvrI2c screen;
+SdsDustSensor sds(Serial1);//Serial1 is Hardware Rx/Tx on the nano
+SSD1306AsciiWire screen;
+
+char *dtostrf (double val, signed char width, unsigned char prec, char *sout) {
+  char fmt[20];
+  sprintf(fmt, "%%%d.%df", width, prec);
+  sprintf(sout, fmt, val);
+  return sout;
+}
 
 int* getPmAcceptability(PmResult pm) {
-  if(pm.pm25 > 0 && pm.pm25 < 12) {
+  if (pm.pm25 > 0 && pm.pm25 < 12) {
     return GREEN;
   } else if (pm.pm25 >= 12 && pm.pm25 < 35) {
     return YELLOW;
@@ -41,7 +46,7 @@ void showResults(int* status, PmResult pm) {
   analogWrite(pinLEDB, status[2]);
 
   //OLED Output
-  screen.setCursor(0,0);
+  screen.setCursor(0, 0);
   screen.print(F("PM 2.5 : "));
   screen.println(pm25_s);
   screen.println();
@@ -51,33 +56,42 @@ void showResults(int* status, PmResult pm) {
 }
 
 void initDisplay() {
+  Wire.begin();
+  Wire.setClock(400000L);
+
   screen.begin(&Adafruit128x64, 0x3C);
 
   screen.setFont(Callibri15);
   screen.clear();
 
-  screen.println(F("Starting"));
+  screen.println(F("Starting..."));
   delay(3000);
-  screen.clear();
 }
 
 void setup() {
-  Serial.begin(9600);  
+  Serial.begin(9600);
+  Serial.println("initializing");
 
   initDisplay();
   sds.begin();
+  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
+  Serial.println(sds.setActiveReportingMode().toString()); // ensures sensor is in 'active' reporting mode
+  //Serial.println(sds.setContinuousWorkingPeriod().toString());
 }
 
 void loop() {
   delay(2000);
 
   PmResult pm = sds.readPm();
-
-  Serial.print("PM2.5 = ");
-  Serial.println(String(pm.pm25));
-  Serial.print(", PM10 = ");
-  Serial.println(String(pm.pm10));
-
-  int *status = getPmAcceptability(pm);
-  showResults(status, pm);  
+  if (pm.isOk()) {
+    Serial.print("PM2.5 = ");
+    Serial.println(String(pm.pm25));
+    Serial.print(", PM10 = ");
+    Serial.println(String(pm.pm10));
+    int *statusLight = getPmAcceptability(pm);
+    showResults(statusLight, pm);
+  } else {
+    Serial.print("Could not read values from sensor, reason: ");
+    Serial.println(pm.statusToString());
+  }
 }
