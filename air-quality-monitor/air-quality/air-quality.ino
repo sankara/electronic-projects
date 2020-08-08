@@ -5,6 +5,8 @@
 #include <SSD1306AsciiWire.h>
 #include <SdsDustSensor.h>
 #include <DHT.h>
+#include <fonts/Callibri15.h>
+#include <fonts/System5x7.h>
 
 #ifdef WIFI_COMPATIBLE_BOARD
 #include "properties.h"
@@ -59,19 +61,21 @@ void displayOnScreen(PmResult pm, float humidity, float temperature) {
   //Flickers
   screen.clear();
 
+  screen.setFont(System5x7);
   screen.setCursor(0, 0);
   screen.print(h_s);
   screen.print(F("% "));
+  screen.print("    ");
   screen.print(t_s);
-  screen.print("  ");
-  screen.print((char)248);
+  screen.print((char)128);
   screen.println("C");
 
   screen.println();
 
-  screen.print(F("PM 2.5 : "));
+  screen.setFont(Callibri15);
+  screen.print(F("  PM 2.5 : "));
   screen.println(pm25_s);
-  screen.print(F("PM 10  : "));
+  screen.print(F("  PM 10  : "));
   screen.println(pm10_s);
 }
 
