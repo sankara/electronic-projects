@@ -10,10 +10,10 @@ float humidity;
 void initProperties(){
 
   ArduinoCloud.setThingId(THING_ID);
-  ArduinoCloud.addProperty(pm10, READ, 1 * SECONDS, NULL);
-  ArduinoCloud.addProperty(pm25, READ, 1 * SECONDS, NULL);
-  ArduinoCloud.addProperty(temperature, READ, ON_CHANGE, NULL, 0.5);
-  ArduinoCloud.addProperty(humidity, READ, ON_CHANGE, NULL, 1);
+  ArduinoCloud.addProperty(pm10, READ, ON_CHANGE, NULL, 0.5);
+  ArduinoCloud.addProperty(pm25, READ, ON_CHANGE, NULL, 0.5);
+  ArduinoCloud.addProperty(temperature, READ, ON_CHANGE, NULL, 0.1);
+  ArduinoCloud.addProperty(humidity, READ, ON_CHANGE, NULL, 1.0);
 }
 
 WiFiConnectionHandler ArduinoIoTPreferredConnection(SSID, PASS);
