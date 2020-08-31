@@ -1,0 +1,6 @@
+[submodule "air-quality-monitor/air-quality/lib/-f"]
+	path = air-quality-monitor/air-quality/lib/-f
+	url = https://github.com/markruys/arduino-DHT
+[submodule "air-quality-monitor/air-quality/lib/arduino-DHT"]
+	path = air-quality-monitor/air-quality/lib/arduino-DHT
+	url = https://github.com/markruys/arduino-DHT
