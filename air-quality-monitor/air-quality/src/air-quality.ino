@@ -1,5 +1,6 @@
 #define WIFI_COMPATIBLE_BOARD 1
 #define AQM_DEBUG 0
+
 #include <Arduino.h>
 #include <SSD1306Ascii.h>
 #include <SSD1306AsciiWire.h>
@@ -10,10 +11,9 @@
 
 
 #if WIFI_COMPATIBLE_BOARD
+
 #include "properties.h"
-//Fails with EEPROM issue. Edit .h manualy to disable cache
-//#include <ezTime.h>
-//Timezone CA_tz;
+
 #endif
 
 
@@ -51,15 +51,15 @@ int *getPmAcceptability(PmResult pm) {
     }
 }
 
-void displayOnScreen(PmResult pm, float humidity, float temperature) {
+void displayOnScreen(PmResult pm, float humd, float temp) {
     char pm25_s[12];
     dtostrf(pm.pm25, 7, 2, pm25_s);
     char pm10_s[12];
     dtostrf(pm.pm10, 7, 2, pm10_s);
     char h_s[12];
-    dtostrf(humidity, 2, 0, h_s);
+    dtostrf(humd, 2, 0, h_s);
     char t_s[12];
-    dtostrf(temperature, 7, 1, t_s);
+    dtostrf(temp, 7, 1, t_s);
 
     //Flickers
     screen.clear();
@@ -82,14 +82,14 @@ void displayOnScreen(PmResult pm, float humidity, float temperature) {
     screen.println(pm10_s);
 }
 
-void showResults(int *status, PmResult pm, float humidity, float temperature) {
+void showResults(int *status, PmResult pm, float humd, float temp) {
     //LED Output
     analogWrite(pinLEDR, status[0]);
     analogWrite(pinLEDG, status[1]);
     analogWrite(pinLEDB, status[2]);
 
     //OLED Output
-    displayOnScreen(pm, humidity, temperature);
+    displayOnScreen(pm, humd, temp);
 }
 
 void initDisplay() {
@@ -124,10 +124,6 @@ void initDHT() {
     dht.setup(pinDHT);
 }
 
-void initNTP(){
-    //CA_tz.setLocation("Pacific/Los_Angeles");
-}
-
 void setup() {
     Serial.begin(9600);
     delay(1500);
@@ -138,7 +134,6 @@ void setup() {
     initDHT();
 #if WIFI_COMPATIBLE_BOARD
     initIOT();
-    //initNTP();
 #endif
 }
 
