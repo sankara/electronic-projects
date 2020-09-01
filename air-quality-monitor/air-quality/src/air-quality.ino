@@ -8,6 +8,7 @@
 #include <DHT.h>
 #include <fonts/Callibri15.h>
 #include <fonts/System5x7.h>
+#include <ezTime.h>
 
 
 #if WIFI_COMPATIBLE_BOARD
@@ -16,6 +17,7 @@
 
 #endif
 
+Timezone tz;
 
 //R, G, B
 int GREEN[] = {0x00, 0xf, 0x00};
@@ -66,9 +68,10 @@ void displayOnScreen(PmResult pm, float humd, float temp) {
 
     screen.setFont(System5x7);
     screen.setCursor(0, 0);
+    screen.print(tz.dateTime("H:i"));
+    screen.print(F("   "));
     screen.print(h_s);
     screen.print(F("% "));
-    screen.print(F("    "));
     screen.print(t_s);
     screen.print((char) 128);
     screen.println(F("C"));
@@ -133,8 +136,11 @@ void setup() {
     initSDS();
     initDHT();
 #if WIFI_COMPATIBLE_BOARD
+    WiFi.begin(SSID, PASS);
     initIOT();
+    waitForSync();
 #endif
+    tz.setLocation("America/Los_Angeles");
 }
 
 void loop() {
