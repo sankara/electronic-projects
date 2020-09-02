@@ -104,7 +104,7 @@ void initDisplay() {
     screen.setFont(Callibri15);
     screen.clear();
 
-    screen.println(F("Starting..."));
+    screen.println(F("Initializing..."));
     delay(3000);
 }
 
@@ -123,14 +123,14 @@ void initIOT() {
 }
 
 void initDHT() {
-    Serial.println("Initializing DHT");
+    Serial.println(F("Initializing DHT"));
     dht.setup(pinDHT);
 }
 
 void setup() {
     Serial.begin(9600);
     delay(1500);
-    Serial.println("initializing");
+    Serial.println(F("Initializing"));
 
     initDisplay();
     initSDS();
@@ -164,10 +164,11 @@ void loop() {
         pm25 = pm.pm25;
 #if WIFI_COMPATIBLE_BOARD
         ArduinoCloud.update();
-        //Serial.println("Current time: " + CA_tz.dateTime());
 #endif
     } else {
+#if AQM_DEBUG
         Serial.print(F("Could not read values from sensor, reason: "));
         Serial.println(pm.statusToString());
+#endif
     }
 }
