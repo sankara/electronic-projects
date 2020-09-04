@@ -171,4 +171,6 @@ void loop() {
         Serial.println(pm.statusToString());
 #endif
     }
+    //Run NTP events.
+    events();
 }
